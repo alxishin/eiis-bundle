@@ -173,6 +173,9 @@ class EiisIntegrationService
 			}
 
 			foreach ($logs as $log){
+				foreach ($log as $key=>$item){
+			        	$log[$key] = $item instanceof \DateTime ? $item->format('d.m.Y H:i:s'): $item;
+                		}
 				$this->addLogHistory($obj->getEiisId(),$config['remote_code'],'info',$log[3].': "'.$log[2].'" -> "'.$log[1].'"');
 			}
 		}
