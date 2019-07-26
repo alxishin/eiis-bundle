@@ -201,18 +201,7 @@ class EiisServiceController
         if(!$this->isValidSession($sessionId)){
             return $this->getError('0322');
         }
-        //@todo
-        $item = $this->getEm()->createQueryBuilder()
-            ->select('e')
-            ->from(Corpemployee::class,'e')
-            ->where('e.photo_file like :filename')
-            ->setParameter('filename',str_replace('-','',$fileId).'%')
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-        if(!$item){
-            return $this->getError('0540');
-        }
-        return base64_encode(file_get_contents($item->getAbsolutePath()));
+		$config = $this->getContainer()->get('eiis.service')->getConfig();
+		return $this->getEm()->getRepository($config['getfile']['class'])->{$config['getfile']['find_method']}($fileId);
     }
 }
