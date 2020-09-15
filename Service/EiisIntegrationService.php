@@ -38,55 +38,58 @@ class EiisIntegrationService
 		return $this->config;
 	}
 
-	public function eiisUpdateLocalData(){
+	public function updateLocalDataByCode(string $code){
 		$this->date = new \DateTime();
+		$sessionId = $this->getSessionId();
+		$filter = new \SimpleXMLElement('<filter/>');
+		$filter = $filter->asXML();
+		$packageId = (string)$this->prepareResult($this->getClient()->CreatePackage(['sessionId'=>$sessionId,'objectCode'=>$code,'historyCreate'=>false,'documentInclude'=>false,'filter'=>$filter])->CreatePackageResult)->attributes()->id;
+		$i = 0;
+		while(true){
+			sleep(5);
+			$package = $this->getClient()->GetPackage(['sessionId'=>$sessionId,'packageId'=>$packageId,'part'=>1]);
+			if((string)$package->GetPackageResult!=='053'){
+				break;
+			}
+			if($i > 10){
+				throw new \Exception('Не удалось получить пакет данных для объекта '.$code);
+			}
+			$i++;
+			$this->getLogger()->info('Try #'.$i);
+		}
+		try{
+			$data = simplexml_load_string((string)$package->GetPackageResult, \SimpleXMLElement::class, LIBXML_COMPACT);
+		}catch (\Throwable $e){
+			throw $e;
+		}
+		$this->getEm()->beginTransaction();
+		try{
+			$config = $this->getConfigByRemoteCode($code);
+			if(!$config){
+				throw new \Exception('Config for code '.$code.' not found');
+			}
+			$this->applyData($this->object2array($data), $config);
+			if($config['delete_object_supported']){
+				$this->getQb()
+					->delete($config['class'],'t')
+//						->from()
+					->where('t.eiisId is null or t.eiisId=\'\'')
+					->getQuery()
+					->execute();
+			}else{
+				$this->getLogger()->warning('Delete object not supported for class '.$config['class']);
+			}
+			$this->getEm()->flush();
+		}catch (\Throwable $e){
+			throw $e;
+		}
+		$this->getEm()->commit();
+	}
+
+	public function eiisUpdateLocalData(){
 		$updateNotifications = $this->getEm()->getRepository(EiisUpdateNotification::class)->findBy(['signalFrom'=>UpdateNotificationEvent::SIGNAL_FROM_EXTERNAL]);
 		foreach ($updateNotifications as $notification){
-			$sessionId = $this->getSessionId();
-			$filter = new \SimpleXMLElement('<filter/>');
-			$filter = $filter->asXML();
-			$packageId = (string)$this->prepareResult($this->getClient()->CreatePackage(['sessionId'=>$sessionId,'objectCode'=>$notification->getSystemObjectCode(),'historyCreate'=>false,'documentInclude'=>false,'filter'=>$filter])->CreatePackageResult)->attributes()->id;
-			$i = 0;
-			while(true){
-				sleep(5);
-				$package = $this->getClient()->GetPackage(['sessionId'=>$sessionId,'packageId'=>$packageId,'part'=>1]);
-				if((string)$package->GetPackageResult!=='053'){
-					break;
-				}
-				if($i > 10){
-					throw new \Exception('Не удалось получить пакет данных для объекта '.$notification->getSystemObjectCode());
-				}
-				$i++;
-				$this->getLogger()->info('Try #'.$i);
-			}
-			try{
-				$data = simplexml_load_string((string)$package->GetPackageResult, \SimpleXMLElement::class, LIBXML_COMPACT);
-			}catch (\Throwable $e){
-				throw $e;
-			}
-			$this->getEm()->beginTransaction();
-			try{
-				$config = $this->getConfigByRemoteCode($notification->getSystemObjectCode());
-				if(!$config){
-					throw new \Exception('Config for code '.$notification->getSystemObjectCode().' not found');
-				}
-				$this->applyData($this->object2array($data), $config);
-				if($config['delete_object_supported']){
-					$this->getQb()
-						->delete($config['class'],'t')
-//						->from()
-						->where('t.eiisId is null or t.eiisId=\'\'')
-						->getQuery()
-						->execute();
-				}else{
-					$this->getLogger()->warning('Delete object not supported for class '.$config['class']);
-				}
-				$this->getEm()->flush();
-			}catch (\Throwable $e){
-				throw $e;
-			}
-			$this->getEm()->commit();
-
+			$this->updateLocalDataByCode($code->getSystemObjectCode());
 		}
 	}
 
