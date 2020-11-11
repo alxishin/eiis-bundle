@@ -89,7 +89,8 @@ class EiisIntegrationService
 	public function eiisUpdateLocalData(){
 		$updateNotifications = $this->getEm()->getRepository(EiisUpdateNotification::class)->findBy(['signalFrom'=>UpdateNotificationEvent::SIGNAL_FROM_EXTERNAL]);
 		foreach ($updateNotifications as $notification){
-			$this->updateLocalDataByCode($code->getSystemObjectCode());
+			/** @var EiisUpdateNotification $notification */
+			$this->updateLocalDataByCode($notification->getSystemObjectCode());
 		}
 	}
 
