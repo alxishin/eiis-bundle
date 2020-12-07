@@ -48,6 +48,18 @@ class EiisLog
 	 */
 	private $dateCreated;
 
+    /**
+     * @var mixed
+     * @ORM\Column(name="type", type="integer", nullable=true)
+     */
+    private $type;
+
+    const TYPE_NEW = 1;
+
+    public static $typeString = [
+        self::TYPE_NEW => 'new'
+    ];
+
 	/**
 	 * Set loghistory
 	 *
@@ -161,5 +173,21 @@ class EiisLog
     public function getDateCreated()
     {
         return $this->dateCreated;
+    }
+
+    /**
+     * @return int
+     */
+    public function getType()
+    {
+        return $this->type;
+    }
+
+    /**
+     * @param int $type
+     */
+    public function setType($type)
+    {
+        $this->type = $type;
     }
 }

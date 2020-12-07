@@ -12,6 +12,7 @@ use Corp\EiisBundle\Entity\EiisLog;
 use Corp\EiisBundle\Entity\EiisSession;
 use Corp\EiisBundle\Entity\EiisUpdateNotification;
 use Corp\EiisBundle\Event\UpdateNotificationEvent;
+use Corp\EiisBundle\Interfaces\IEiisLog;
 use Corp\EiisBundle\Traits\ContainerUsageTrait;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Validator\ConstraintViolationInterface;
@@ -29,6 +30,8 @@ class EiisIntegrationService
 
 	/** @var LoggerInterface */
 	private $logger;
+
+    private $newLog = [];
 
 	public function setConfig(array $config){
 		$this->config = $config;
@@ -79,6 +82,7 @@ class EiisIntegrationService
 			}else{
 				$this->getLogger()->warning('Delete object not supported for class '.$config['class']);
 			}
+            $this->addNewLog();
 			$this->getEm()->flush();
 		}catch (\Throwable $e){
 			throw $e;
@@ -89,7 +93,6 @@ class EiisIntegrationService
 	public function eiisUpdateLocalData(){
 		$updateNotifications = $this->getEm()->getRepository(EiisUpdateNotification::class)->findBy(['signalFrom'=>UpdateNotificationEvent::SIGNAL_FROM_EXTERNAL]);
 		foreach ($updateNotifications as $notification){
-			/** @var EiisUpdateNotification $notification */
 			$this->updateLocalDataByCode($notification->getSystemObjectCode());
 		}
 	}
@@ -148,10 +151,13 @@ class EiisIntegrationService
 	private function applyData(array $data, array $config){
 		$notCreatedCount = 0;
 		foreach ($data as $value){
+
+            $newObject = false;
 			$obj = $this->getEm()->getRepository($config['class'])->{$config['find_one_method']}($value);
 			if(!$obj){
 				if($config['create_object_supported']){
 					$obj = new $config['class']();
+                    $newObject = true;
 					$this->getEm()->persist($obj);
 					if(method_exists($obj,'assignContainer')){
 						$obj->assignContainer($this->getContainer());
@@ -174,7 +180,9 @@ class EiisIntegrationService
 				$this->addLogHistory($obj->getEiisId(), $config['remote_code'], 'warning', implode('; ', $message));
 				unset($obj);
 				continue;
-			}
+			}elseif($newObject){
+                $this->newLog[$config['remote_code']][] = $obj;
+            }
 
 			foreach ($logs as $log){
 				foreach ($log as $key=>$item){
@@ -303,4 +311,23 @@ class EiisIntegrationService
 		$log->setLoghistory($array);
 		$this->getEm()->flush($log);
 	}
+
+    private function addNewLog(){
+
+        foreach ($this->newLog as $remoteCode => $objArray){
+            $log = new EiisLog();
+            $log->setSystemObjectCode($remoteCode)->setType(EiisLog::TYPE_NEW);
+            $data = [];
+            foreach ($objArray as $obj){
+                if($obj instanceof IEiisLog){
+                    $data[] = $obj->toEiisLog();
+                }
+            }
+            if(count($data)>0){
+                $log->setLoghistory($data);
+                $this->getEm()->persist($log);
+                $this->getEm()->flush($log);
+            }
+        }
+    }
 }

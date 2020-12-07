@@ -2,15 +2,32 @@
 
 {% block field%}
     {% if object.logHistory|length %}
-        <div class="well">
-            {% for date,items in object.logHistory %}
-                <strong>{{ date|date('Y.m.d H:i') }}</strong>
-                {% for item in items %}
-                    <div class="bg-{{ item.type }}">
-                        {{ item.message }}
+        {% if object.type == constant('TYPE_NEW', object) %}
+            <div class="well">
+                <h3>{{ 'added new'| trans }}:</h3>
+                {% for item in object.logHistory %}
+                    <div class="well">
+                        {% for key,value in item %}
+                          {% if value %}
+                              <div class="bg-info">
+                                  {{ key }} -> {{ value }}
+                              </div>
+                          {% endif %}
+                        {% endfor %}
                     </div>
                 {% endfor %}
-            {% endfor %}
-        </div>
+            </div>
+        {% else %}
+            <div class="well">
+                {% for date,items in object.logHistory %}
+                    <strong>{{ date|date('Y.m.d H:i') }}</strong>
+                    {% for item in items %}
+                        <div class="bg-{{ item.type }}">
+                            {{ item.message }}
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        {% endif%}
     {% endif %}
 {% endblock %}
