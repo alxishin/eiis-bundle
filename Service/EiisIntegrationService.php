@@ -151,9 +151,9 @@ class EiisIntegrationService
 	private function applyData(array $data, array $config){
 		$notCreatedCount = 0;
 		foreach ($data as $value){
-
             $newObject = false;
 			$obj = $this->getEm()->getRepository($config['class'])->{$config['find_one_method']}($value);
+
 			if(!$obj){
 				if($config['create_object_supported']){
 					$obj = new $config['class']();
@@ -316,16 +316,26 @@ class EiisIntegrationService
 
         foreach ($this->newLog as $remoteCode => $objArray){
             $log = new EiisLog();
+            $this->getEm()->persist($log);
             $log->setSystemObjectCode($remoteCode)->setType(EiisLog::TYPE_NEW);
             $data = [];
             foreach ($objArray as $obj){
                 if($obj instanceof IEiisLog){
                     $data[] = $obj->toEiisLog();
                 }
+
+                if(count($data) >= 20){
+                    $log->setLoghistory($data);
+                    $this->getEm()->flush($log);
+
+                    $log = new EiisLog();
+                    $this->getEm()->persist($log);
+                    $log->setSystemObjectCode($remoteCode)->setType(EiisLog::TYPE_NEW);
+                    $data = [];
+                }
             }
-            if(count($data)>0){
+            if(count($data) > 0){
                 $log->setLoghistory($data);
-                $this->getEm()->persist($log);
                 $this->getEm()->flush($log);
             }
         }
