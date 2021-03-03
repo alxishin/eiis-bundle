@@ -47,14 +47,32 @@ class EiisIntegrationService
 		$filter = new \SimpleXMLElement('<filter/>');
 		$filter = $filter->asXML();
 		$packageId = (string)$this->prepareResult($this->getClient()->CreatePackage(['sessionId'=>$sessionId,'objectCode'=>$code,'historyCreate'=>false,'documentInclude'=>false,'filter'=>$filter])->CreatePackageResult)->attributes()->id;
-		$i = 0;
-		while(true){
-			sleep(5);
-			$package = $this->getClient()->GetPackage(['sessionId'=>$sessionId,'packageId'=>$packageId,'part'=>1]);
-			if((string)$package->GetPackageResult!=='053'){
+		$part = 1;
+		while (true){
+			$this->getLogger()->info('Load '.$code.' package part #'.$part);
+			$result = $this->handlePackagePart($code, $sessionId, $packageId, $part);
+			if(!$result){
 				break;
 			}
-			if($i > 10){
+			$part++;
+		}
+	}
+
+	private function handlePackagePart($code, $sessionId, $packageId, $part){
+		$i = 0;
+		while(true){
+			sleep(50);
+			$package = $this->getClient()->GetPackage(['sessionId'=>$sessionId,'packageId'=>$packageId,'part'=>$part]);
+			switch ((string)$package->GetPackageResult){
+				case '0542':
+					return false;
+				case '053':
+					continue 2;
+				default:
+					break 2;
+			}
+
+			if($i > 10000){
 				throw new \Exception('Не удалось получить пакет данных для объекта '.$code);
 			}
 			$i++;
@@ -82,12 +100,13 @@ class EiisIntegrationService
 			}else{
 				$this->getLogger()->warning('Delete object not supported for class '.$config['class']);
 			}
-            $this->addNewLog();
+			$this->addNewLog();
 			$this->getEm()->flush();
 		}catch (\Throwable $e){
 			throw $e;
 		}
 		$this->getEm()->commit();
+		return true;
 	}
 
 	public function eiisUpdateLocalData(){
