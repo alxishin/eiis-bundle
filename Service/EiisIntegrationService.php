@@ -61,18 +61,25 @@ class EiisIntegrationService
 	private function handlePackagePart($code, $sessionId, $packageId, $part){
 		$i = 0;
 		while(true){
-			sleep(50);
-			$package = $this->getClient()->GetPackage(['sessionId'=>$sessionId,'packageId'=>$packageId,'part'=>$part]);
-			switch ((string)$package->GetPackageResult){
-				case '0542':
-					return false;
-				case '053':
-					continue 2;
-				default:
-					break 2;
+			sleep(10);
+			$package = false;
+			try{
+				$package = $this->getClient()->GetPackage(['sessionId'=>$sessionId,'packageId'=>$packageId,'part'=>$part]);
+			}catch (\Throwable $exception){
+
+			}
+			if($package){
+				switch ((string)$package->GetPackageResult){
+					case '0542':
+						return false;
+					case '053':
+						continue 2;
+					default:
+						break 2;
+				}
 			}
 
-			if($i > 10000){
+			if($i > 10){
 				throw new \Exception('Не удалось получить пакет данных для объекта '.$code);
 			}
 			$i++;
