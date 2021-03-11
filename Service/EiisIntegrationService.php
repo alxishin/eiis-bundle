@@ -66,18 +66,20 @@ class EiisIntegrationService
 			if($i > 10){
 				throw new \Exception('Не удалось получить пакет данных для объекта '.$code);
 			}
-			$this->getLogger()->info('Try #'.$i);
+
 			$package = false;
 			try{
 				$package = $this->getClient()->GetPackage(['sessionId'=>$sessionId,'packageId'=>$packageId,'part'=>$part]);
 			}catch (\Throwable $exception){
-
+				$this->getLogger()->info('Error "'.$exception->getMessage().'" next try #'.$i);
 			}
+
 			if($package){
 				switch ((string)$package->GetPackageResult){
 					case '0542':
 						return false;
 					case '053':
+						$this->getLogger()->info(date('c').' 053 code - next try #'.$i);
 						continue 2;
 					default:
 						break 2;
@@ -101,7 +103,6 @@ class EiisIntegrationService
 			if($config['delete_object_supported']){
 				$this->getQb()
 					->delete($config['class'],'t')
-//						->from()
 					->where('t.eiisId is null or t.eiisId=\'\'')
 					->getQuery()
 					->execute();
@@ -177,6 +178,7 @@ class EiisIntegrationService
 
 	private function applyData(array $data, array $config){
 		$notCreatedCount = 0;
+//		print_r($data);return;
 		foreach ($data as $value){
             $newObject = false;
 			$obj = $this->getEm()->getRepository($config['class'])->{$config['find_one_method']}($value);
@@ -343,25 +345,15 @@ class EiisIntegrationService
 
         foreach ($this->newLog as $remoteCode => $objArray){
             $log = new EiisLog();
-            $this->getEm()->persist($log);
             $log->setSystemObjectCode($remoteCode)->setType(EiisLog::TYPE_NEW);
             $data = [];
             foreach ($objArray as $obj){
                 if($obj instanceof IEiisLog){
                     $data[] = $obj->toEiisLog();
                 }
-
-                if(count($data) >= 20){
-                    $log->setLoghistory($data);
-                    $this->getEm()->flush($log);
-
-                    $log = new EiisLog();
-                    $this->getEm()->persist($log);
-                    $log->setSystemObjectCode($remoteCode)->setType(EiisLog::TYPE_NEW);
-                    $data = [];
-                }
             }
             if(count($data) > 0){
+				$this->getEm()->persist($log);
                 $log->setLoghistory($data);
                 $this->getEm()->flush($log);
             }
