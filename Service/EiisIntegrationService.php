@@ -63,6 +63,10 @@ class EiisIntegrationService
 		while(true){
 			sleep(10);
 			$i++;
+			if($i > 10){
+				throw new \Exception('Не удалось получить пакет данных для объекта '.$code);
+			}
+			$this->getLogger()->info('Try #'.$i);
 			$package = false;
 			try{
 				$package = $this->getClient()->GetPackage(['sessionId'=>$sessionId,'packageId'=>$packageId,'part'=>$part]);
@@ -80,11 +84,7 @@ class EiisIntegrationService
 				}
 			}
 
-			if($i > 10){
-				throw new \Exception('Не удалось получить пакет данных для объекта '.$code);
-			}
 
-			$this->getLogger()->info('Try #'.$i);
 		}
 		try{
 			$data = simplexml_load_string((string)$package->GetPackageResult, \SimpleXMLElement::class, LIBXML_COMPACT);
@@ -177,6 +177,7 @@ class EiisIntegrationService
 
 	private function applyData(array $data, array $config){
 		$notCreatedCount = 0;
+		print_r($data);return;
 		foreach ($data as $value){
             $newObject = false;
 			$obj = $this->getEm()->getRepository($config['class'])->{$config['find_one_method']}($value);
