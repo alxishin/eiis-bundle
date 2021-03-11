@@ -62,6 +62,7 @@ class EiisIntegrationService
 		$i = 0;
 		while(true){
 			sleep(10);
+			$i++;
 			$package = false;
 			try{
 				$package = $this->getClient()->GetPackage(['sessionId'=>$sessionId,'packageId'=>$packageId,'part'=>$part]);
@@ -82,7 +83,7 @@ class EiisIntegrationService
 			if($i > 10){
 				throw new \Exception('Не удалось получить пакет данных для объекта '.$code);
 			}
-			$i++;
+
 			$this->getLogger()->info('Try #'.$i);
 		}
 		try{
