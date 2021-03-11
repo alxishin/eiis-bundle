@@ -177,7 +177,6 @@ class EiisIntegrationService
 
 	private function applyData(array $data, array $config){
 		$notCreatedCount = 0;
-		print_r($data);return;
 		foreach ($data as $value){
             $newObject = false;
 			$obj = $this->getEm()->getRepository($config['class'])->{$config['find_one_method']}($value);
