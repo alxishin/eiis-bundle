@@ -6,7 +6,7 @@
  * Time: 13:58
  */
 
-namespace Corp\EiisBundle\Exception;
+namespace Corp\EiisBundle\Exceptions;
 
 class PackageNotCreatedException extends \Exception
 {
