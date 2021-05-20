@@ -15,6 +15,7 @@ use Corp\EiisBundle\Event\UpdateNotificationEvent;
 use Corp\EiisBundle\Interfaces\IEiisLog;
 use Corp\EiisBundle\Traits\ContainerUsageTrait;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\Validator\ConstraintViolationInterface;
 
 class EiisIntegrationService
@@ -188,8 +189,8 @@ class EiisIntegrationService
 					$obj = new $config['class']();
                     $newObject = true;
 					$this->getEm()->persist($obj);
-					if(method_exists($obj,'assignContainer')){
-						$obj->assignContainer($this->getContainer());
+					if($obj instanceof ContainerAwareInterface){
+						$obj->setContainer($this->getContainer());
 					}
 				}else{
 					$notCreatedCount++;
