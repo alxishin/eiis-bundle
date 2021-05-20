@@ -12,6 +12,7 @@ use Corp\EiisBundle\Entity\EiisLog;
 use Corp\EiisBundle\Entity\EiisSession;
 use Corp\EiisBundle\Entity\EiisUpdateNotification;
 use Corp\EiisBundle\Event\UpdateNotificationEvent;
+use Corp\EiisBundle\Exception\SkipThisObjectException;
 use Corp\EiisBundle\Interfaces\IEiisLog;
 use Corp\EiisBundle\Traits\ContainerUsageTrait;
 use Psr\Log\LoggerInterface;
@@ -187,8 +188,8 @@ class EiisIntegrationService
 			if(!$obj){
 				if($config['create_object_supported']){
 					$obj = new $config['class']();
-                    $newObject = true;
 					$this->getEm()->persist($obj);
+                    $newObject = true;
 					if($obj instanceof ContainerAwareInterface){
 						$obj->setContainer($this->getContainer());
 					}
@@ -197,7 +198,13 @@ class EiisIntegrationService
 					continue;
 				}
 			}
-			$logs = $obj->{$config['setter']}($value);
+			try {
+				$logs = $obj->{$config['setter']}($value);
+			}catch (SkipThisObjectException $exception){
+				$notCreatedCount++;
+				$this->getEm()->detach($obj);
+				continue;
+			}
 			$errors = $this->getContainer()->get('validator')->validate($obj);
 			if($errors->count() > 0){
 				$message = [];
@@ -211,15 +218,16 @@ class EiisIntegrationService
 				unset($obj);
 				continue;
 			}elseif($newObject){
-                $this->newLog[$config['remote_code']][] = $obj;
-            }
+				$this->newLog[$config['remote_code']][] = $obj;
+			}
 
 			foreach ($logs as $log){
 				foreach ($log as $key=>$item){
-			        	$log[$key] = $item instanceof \DateTime ? $item->format('d.m.Y H:i:s'): $item;
-                		}
+					$log[$key] = $item instanceof \DateTime ? $item->format('d.m.Y H:i:s'): $item;
+				}
 				$this->addLogHistory($obj->getEiisId(),$config['remote_code'],'info',$log[3].': "'.$log[2].'" -> "'.$log[1].'"');
 			}
+
 		}
 		if($notCreatedCount > 0){
 			$this->getLogger()->warning('Not Created Count: '.$notCreatedCount);
