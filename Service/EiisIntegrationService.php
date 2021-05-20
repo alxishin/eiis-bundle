@@ -12,7 +12,7 @@ use Corp\EiisBundle\Entity\EiisLog;
 use Corp\EiisBundle\Entity\EiisSession;
 use Corp\EiisBundle\Entity\EiisUpdateNotification;
 use Corp\EiisBundle\Event\UpdateNotificationEvent;
-use Corp\EiisBundle\Exception\SkipThisObjectException;
+use Corp\EiisBundle\Exceptions\SkipThisObjectException;
 use Corp\EiisBundle\Interfaces\IEiisLog;
 use Corp\EiisBundle\Traits\ContainerUsageTrait;
 use Psr\Log\LoggerInterface;
