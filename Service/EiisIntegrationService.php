@@ -12,6 +12,7 @@ use Corp\EiisBundle\Entity\EiisLog;
 use Corp\EiisBundle\Entity\EiisSession;
 use Corp\EiisBundle\Entity\EiisUpdateNotification;
 use Corp\EiisBundle\Event\UpdateNotificationEvent;
+use Corp\EiisBundle\Event\UpdateCompleteEvent;
 use Corp\EiisBundle\Exceptions\SkipThisObjectException;
 use Corp\EiisBundle\Interfaces\IEiisLog;
 use Corp\EiisBundle\Traits\ContainerUsageTrait;
@@ -58,6 +59,7 @@ class EiisIntegrationService
 			}
 			$part++;
 		}
+		$this->getContainer()->get('event_dispatcher')->dispatch(UpdateCompleteEvent::NAME, new UpdateCompleteEvent($code, UpdateNotificationEvent::SIGNAL_FROM_EXTERNAL));
 	}
 
 	private function handlePackagePart($code, $sessionId, $packageId, $part){
