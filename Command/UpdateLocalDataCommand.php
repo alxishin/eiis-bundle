@@ -8,9 +8,12 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Logger\ConsoleLogger;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Command\LockableTrait;
 
 class UpdateLocalDataCommand extends ContainerAwareCommand
 {
+    use LockableTrait;
+
     protected function configure()
     {
         $this
@@ -22,7 +25,12 @@ class UpdateLocalDataCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-		$this->getContainer()->get('eiis.service')->setLogger(new ConsoleLogger($output));
+	if (!$this->lock()) {
+		$io = new SymfonyStyle($input, $output);
+		$io->error('The command is already running in another process.');
+		return 1;
+	}
+	$this->getContainer()->get('eiis.service')->setLogger(new ConsoleLogger($output));
         switch ($input->getArgument('type')){
             case 'eiisUpdateLocalData':
             case 'eiisUpdateExternalData':
