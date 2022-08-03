@@ -47,8 +47,7 @@ class EiisIntegrationService
 	public function updateLocalDataByCode(string $code){
 		$this->date = new \DateTime();
 		$sessionId = $this->getSessionId();
-		$filter = new \SimpleXMLElement('<filter/>');
-		$filter = $filter->asXML();
+        $filter = $this->filterGenerate($code);
 		$packageId = (string)$this->prepareResult($this->getClient()->CreatePackage(['sessionId'=>$sessionId,'objectCode'=>$code,'historyCreate'=>false,'documentInclude'=>false,'filter'=>$filter])->CreatePackageResult)->attributes()->id;
 		$part = 1;
 		while (true){
@@ -61,6 +60,31 @@ class EiisIntegrationService
 		}
 		$this->getContainer()->get('event_dispatcher')->dispatch(UpdateCompleteEvent::NAME, new UpdateCompleteEvent($code, UpdateNotificationEvent::SIGNAL_FROM_EXTERNAL));
 	}
+
+    private function filterGenerate(string $code){
+        $filter = new \SimpleXMLElement('<filter/>');
+        $filter = $filter->asXML();
+
+        $configItem = $this->getConfigByRemoteCode($code);
+
+        try{
+
+            if($configItem && isset($configItem['filter'])){
+                $filtData = $configItem['filter'];
+                $value = $filtData['value'];
+                if($filtData['type'] === 'DATE'){
+                    $filtDate = new \DateTime($filtData['value']);
+                    $value = $filtDate->format('d.m.Y');
+                }
+
+                $filter = '<filter><column code="'.$filtData['field'].'" '.$filtData['action'].'="'.$value.'"></column></filter>';
+            }
+        }catch (Exception $e){
+            $this->getLogger()->warning('Generating Filter  is error('.$code.'):'.$e->getMessage());
+        }
+
+        return $filter;
+    }
 
 	private function handlePackagePart($code, $sessionId, $packageId, $part){
 		$i = 0;
