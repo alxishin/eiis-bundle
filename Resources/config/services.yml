@@ -17,3 +17,6 @@ services:
         tags:
             - { name: sonata.admin, manager_type: orm, group: admin, label: EiisLog }
         public: true
+    Corp\EiisBundle\Command\UpdateLocalDataCommand:
+        tags:
+            - { name: console.command }
