@@ -30,7 +30,7 @@ class EiisLog
 
 	/**
 	 * @var array
-	 * @ORM\Column(name="loghistory", type="json_array")
+	 * @ORM\Column(name="loghistory", type="json")
 	 */
 	private $loghistory;
 
