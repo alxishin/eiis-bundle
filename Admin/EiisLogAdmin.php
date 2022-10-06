@@ -17,19 +17,19 @@ class EiisLogAdmin extends AbstractAdmin
         '_sort_order' => 'DESC',
         '_sort_by' => 'dateCreated'
     );
-    protected function configureDatagridFilters(DatagridMapper $datagridMapper)
+    protected function configureDatagridFilters(DatagridMapper $datagridMapper): void
     {
         $datagridMapper
             ->add('systemObjectCode')
             ->add('eiisId')
             ->add('dateCreated')
-            ->add('type', 'doctrine_orm_choice',[], ChoiceType::class, [
-                'choices'=>array_flip(EiisLog::$typeString)
-            ])
+//            ->add('type', 'doctrine_orm_choice',[], ChoiceType::class, [
+//                'choices'=>array_flip(EiisLog::$typeString)
+//            ])
         ;
     }
 
-    protected function configureListFields(ListMapper $listMapper)
+    protected function configureListFields(ListMapper $listMapper): void
     {
         $listMapper
 //            ->add('id')
@@ -45,12 +45,12 @@ class EiisLogAdmin extends AbstractAdmin
         ;
     }
 
-    protected function configureFormFields(FormMapper $formMapper)
+    protected function configureFormFields(FormMapper $formMapper): void
     {
 
     }
 
-    protected function configureShowFields(ShowMapper $showMapper)
+    protected function configureShowFields(ShowMapper $showMapper): void
     {
         $showMapper
             ->add('systemObjectCode')

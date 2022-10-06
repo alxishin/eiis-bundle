@@ -1,4 +1,7 @@
 services:
+    _defaults:
+      autowire: true      # Automatically injects dependencies in your services.
+      autoconfigure: true
     eiis.service:
         class: Corp\EiisBundle\Service\EiisIntegrationService
         calls:
@@ -17,3 +20,6 @@ services:
         tags:
             - { name: sonata.admin, manager_type: orm, group: admin, label: EiisLog }
         public: true
+    Corp\EiisBundle\Command\UpdateLocalDataCommand:
+        tags:
+            - { name: console.command }
