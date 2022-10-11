@@ -3,6 +3,7 @@ services:
       autowire: true      # Automatically injects dependencies in your services.
       autoconfigure: true
     eiis.service:
+        public: true
         class: Corp\EiisBundle\Service\EiisIntegrationService
         calls:
              - [assignContainer, ['@service_container']]
