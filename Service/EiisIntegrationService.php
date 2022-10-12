@@ -137,7 +137,7 @@ class EiisIntegrationService
 			}else{
 				$this->getLogger()->warning('Delete object not supported for class '.$config['class']);
 			}
-			$this->addNewLog();
+			// $this->addNewLog();
 			$this->getEm()->flush();
 		}catch (\Throwable $e){
 			throw $e;
@@ -240,19 +240,20 @@ class EiisIntegrationService
 					$this->getLogger()->warning('CREATE '.$config['class'].'#'.$obj->getEiisid().' '.$error->getPropertyPath().' '.$error->getMessage());
 				}
 				$this->getEm()->detach($obj);
-				$this->addLogHistory($obj->getEiisId(), $config['remote_code'], 'warning', implode('; ', $message));
+				// $this->addLogHistory($obj->getEiisId(), $config['remote_code'], 'warning', implode('; ', $message));
 				unset($obj);
 				continue;
 			}elseif($newObject){
 				$this->newLog[$config['remote_code']][] = $obj;
 			}
-
+			/*
 			foreach ($logs as $log){
 				foreach ($log as $key=>$item){
 					$log[$key] = $item instanceof \DateTime ? $item->format('d.m.Y H:i:s'): $item;
 				}
 				$this->addLogHistory($obj->getEiisId(),$config['remote_code'],'info',$log[3].': "'.$log[2].'" -> "'.$log[1].'"');
 			}
+			*/
 
 		}
 		if($notCreatedCount > 0){
