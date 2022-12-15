@@ -216,8 +216,8 @@ class EiisIntegrationService
 					$obj = new $config['class']();
 					$this->getEm()->persist($obj);
                     $newObject = true;
-					if($obj instanceof ContainerAwareInterface){
-						$obj->setContainer($this->getContainer());
+					if(method_exists($obj, 'setServiceContainer')){
+						$obj->setServiceContainer($this->getContainer());
 					}
 				}else{
 					$notCreatedCount++;
@@ -228,7 +228,11 @@ class EiisIntegrationService
 				$logs = $obj->{$config['setter']}($value);
 			}catch (SkipThisObjectException $exception){
 				$notCreatedCount++;
-				$this->getEm()->detach($obj);
+				if(!$obj || is_null($obj->getId())){
+				    $this->getEm()->detach($obj);
+				}else{
+				    $this->getEm()->refresh($obj);
+				}
 				continue;
 			}
 			$errors = $this->getContainer()->get('validator')->validate($obj);
@@ -239,7 +243,11 @@ class EiisIntegrationService
 					$message[] = $error->getPropertyPath().' '.$error->getMessage();
 					$this->getLogger()->warning('CREATE '.$config['class'].'#'.$obj->getEiisid().' '.$error->getPropertyPath().' '.$error->getMessage());
 				}
-				$this->getEm()->detach($obj);
+				if(!$obj || is_null($obj->getId())){
+				    $this->getEm()->detach($obj);
+				}else{
+				    $this->getEm()->refresh($obj);
+				}
 				// $this->addLogHistory($obj->getEiisId(), $config['remote_code'], 'warning', implode('; ', $message));
 				unset($obj);
 				continue;
