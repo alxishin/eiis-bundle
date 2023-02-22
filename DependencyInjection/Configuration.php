@@ -17,9 +17,9 @@ class Configuration implements ConfigurationInterface
      */
     public function getConfigTreeBuilder()
     {
-        $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('corp_eiis');
-        $rootNode
+        $treeBuilder = new TreeBuilder('corp_eiis');
+        $treeBuilder
+	    ->getRootNode()
             ->children()
                 ->arrayNode('remote')//->end()
                     ->children()
