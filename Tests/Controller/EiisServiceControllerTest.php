@@ -21,7 +21,7 @@ class EiisServiceControllerTest extends WebTestCase
             $this->getContainer()->get('doctrine')->getManager()->persist($notify);
         }
         $this->getContainer()->get('doctrine')->getManager()->flush();
-        $this->getContainer()->get('eiis.service')->eiisUpdateLocalData();
+        $this->eiisIntegrationService->eiisUpdateLocalData();
 //        $this->getContainer()->get('eiis.service')->eiisUpdateExternalData();
     }
 

@@ -5,6 +5,7 @@ namespace Corp\EiisBundle\Controller;
 use Corp\EiisBundle\Entity\EiisPackage;
 use Corp\EiisBundle\Entity\EiisSession;
 use Corp\EiisBundle\Event\UpdateNotificationEvent;
+use Corp\EiisBundle\Service\EiisIntegrationService;
 use Corp\EiisBundle\Traits\ContainerUsageTrait;
 use Corp\MyBundle\Entity\Corpemployee;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -16,9 +17,11 @@ class EiisServiceController
     /**
      * EiisServiceController constructor.
      */
-    public function __construct(ContainerInterface $container)
+    public function __construct(ContainerInterface $container,EiisIntegrationService $eiisIntegrationService)
     {
         $this->assignContainer($container);
+
+        $this->eiisIntegrationService = $eiisIntegrationService;
     }
 
     /**
@@ -27,12 +30,12 @@ class EiisServiceController
      * @return string
      */
     public function GetSessionId(string $login, string $password){
-        if($login!==$this->getContainer()->get('eiis.service')->getConfig()['local']['username'] || $password!==$this->getContainer()->get('eiis.service')->getConfig()['local']['password']){
+        if($login!==$this->eiisIntegrationService->getConfig()['local']['username'] || $password!==$this->getContainer()->get('eiis.service')->getConfig()['local']['password']){
             return $this->getError('0321');
         }
 //        throw new \Exception(':(');
         $session = new EiisSession();
-        $session->setUuid($this->getContainer()->get('eiis.service')->guidv4());
+        $session->setUuid($this->eiisIntegrationService->guidv4());
         $this->getEm()->persist($session);
         $this->getEm()->flush();
         return $this->prepareResponse(['session'=>['id'=>$session->getUuid()]]);
@@ -56,12 +59,12 @@ class EiisServiceController
     }
 
     private function isValidLocalCode(string $code, string $type){
-        $info = $this->getContainer()->get('eiis.service')->getConfigByLocalCode($code);
+        $info = $this->eiisIntegrationService->getConfigByLocalCode($code);
         return $info && isset($info[$type]);
     }
 
     private function isValidRemoteCode(string $code, string $type){
-        $info = $this->getContainer()->get('eiis.service')->getConfigByRemoteCode($code);
+        $info = $this->eiisIntegrationService->getConfigByRemoteCode($code);
         return $info && isset($info[$type]);
     }
 
@@ -111,7 +114,7 @@ class EiisServiceController
         if($this->isValidLocalCode($objectCode, 'getter')){
             $package = new EiisPackage();
             $package
-                ->setUuid($this->getContainer()->get('eiis.service')->guidv4())
+                ->setUuid($this->eiisIntegrationService->guidv4())
                 ->setDateCreated(new \DateTime())
                 ->setSystemObjectCode($objectCode);
             $this->getEm()->persist($package);
@@ -137,11 +140,11 @@ class EiisServiceController
             return $this->getError('0541');
         }
 
-        $info = $this->getContainer()->get('eiis.service')->getConfigByLocalCode($packageId->getSystemObjectCode());
+        $info = $this->eiisIntegrationService->getConfigByLocalCode($packageId->getSystemObjectCode());
         $list = $this->getEm()->getRepository($info['class'])->{$info['find_all_method']}();
         $data = [];
         foreach ($list as $value){
-            $data[] = $value->{$info['getter']}($this->getContainer()->get('eiis.service'));
+            $data[] = $value->{$info['getter']}($this->eiisIntegrationService);
         }
         $this->getEm()->flush();
         $xml = new \SimpleXMLElement('<object/>', LIBXML_NOXMLDECL);
@@ -201,7 +204,7 @@ class EiisServiceController
         if(!$this->isValidSession($sessionId)){
             return $this->getError('0322');
         }
-		$config = $this->getContainer()->get('eiis.service')->getConfig();
+		$config = $this->eiisIntegrationService->getConfig();
 		return $this->getEm()->getRepository($config['getfile']['class'])->{$config['getfile']['find_method']}($fileId);
     }
 }

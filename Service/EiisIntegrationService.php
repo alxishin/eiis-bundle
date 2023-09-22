@@ -58,7 +58,7 @@ class EiisIntegrationService
 			}
 			$part++;
 		}
-		$this->getContainer()->get('event_dispatcher')->dispatch(UpdateCompleteEvent::NAME, new UpdateCompleteEvent($code, UpdateNotificationEvent::SIGNAL_FROM_EXTERNAL));
+		$this->getContainer()->get('event_dispatcher')->dispatch(new UpdateCompleteEvent($code, UpdateNotificationEvent::SIGNAL_FROM_EXTERNAL), UpdateCompleteEvent::NAME);
 	}
 
     private function filterGenerate(string $code){

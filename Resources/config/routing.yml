@@ -1,4 +1,5 @@
 soapserver_eiis:
     path: /soapserver/eiis
     defaults:
-        _controller: 'CorpEiisBundle:SoapServer:eiis'
+        _controller: 'Corp\EiisBundle\Controller\SoapServerController::eiis'
+#        _controller: 'CorpEiisBundle:SoapServer:eiis'

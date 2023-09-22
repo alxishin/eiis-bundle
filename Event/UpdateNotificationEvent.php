@@ -7,7 +7,7 @@
  */
 namespace Corp\EiisBundle\Event;
 
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Contracts\EventDispatcher\Event;
 
 class UpdateNotificationEvent extends Event
 {

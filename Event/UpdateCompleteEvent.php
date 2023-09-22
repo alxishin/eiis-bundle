@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Corp\EiisBundle\Event;
 
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Contracts\EventDispatcher\Event;
 
 class UpdateCompleteEvent extends Event
 {
