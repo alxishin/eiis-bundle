@@ -15,7 +15,6 @@ use Symfony\Component\Console\Command\LockableTrait;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 class UpdateLocalDataCommand extends Command
-//class UpdateLocalDataCommand extends ContainerAwareCommand
 {
     use LockableTrait;
 
@@ -46,8 +45,7 @@ class UpdateLocalDataCommand extends Command
         switch ($input->getArgument('type')){
             case 'eiisUpdateLocalData':
             case 'eiisUpdateExternalData':
-            case 'clearOldData':
-            $this->eiisIntegrationService->{$input->getArgument('type')}();
+                $this->eiisIntegrationService->{$input->getArgument('type')}();
 				break;
             case 'updateLocalDataByCode':
 				if(!$input->getOption('code')){

@@ -2,23 +2,19 @@ services:
     _defaults:
       autowire: true      # Automatically injects dependencies in your services.
       autoconfigure: true
-
-    Corp\EiisBundle\Controller\SoapServerController: ~
-    Corp\EiisBundle\Controller\EiisServiceController: ~
-
     Corp\EiisBundle\Service\EiisIntegrationService:
 #    eiis.service:
         public: true
         class: Corp\EiisBundle\Service\EiisIntegrationService
-        calls:
-             - [assignContainer, ['@service_container']]
+#        calls:
+#             - [assignContainer, ['@service_container']]
     eiis.update.notification.subscriber:
         class: Corp\EiisBundle\Event\UpdateNotificationSubscriber
         public: true
         tags:
             - { name: kernel.event_listener, event: eiis.notification.update }
-        calls:
-             - [assignContainer, ['@service_container']]
+#        calls:
+#             - [assignContainer, ['@service_container']]
 
     corp_eiis.admin.eiis_log:
         class: Corp\EiisBundle\Admin\EiisLogAdmin
