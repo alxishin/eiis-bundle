@@ -8,17 +8,13 @@
 
 namespace Corp\EiisBundle\Service;
 
-use Corp\EiisBundle\Entity\EiisLog;
-use Corp\EiisBundle\Entity\EiisSession;
 use Corp\EiisBundle\Entity\EiisUpdateNotification;
 use Corp\EiisBundle\Event\UpdateNotificationEvent;
 use Corp\EiisBundle\Event\UpdateCompleteEvent;
 use Corp\EiisBundle\Exceptions\SkipThisObjectException;
-use Corp\EiisBundle\Interfaces\IEiisLog;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Validator\ConstraintViolationInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -93,7 +89,7 @@ class EiisIntegrationService
 
                 $filter = '<filter><column code="'.$filtData['field'].'" '.$filtData['action'].'="'.$value.'"></column></filter>';
             }
-        }catch (Exception $e){
+        }catch (\Throwable $e){
             $this->getLogger()->warning('Generating Filter  is error('.$code.'):'.$e->getMessage());
         }
 
@@ -144,7 +140,8 @@ class EiisIntegrationService
 			}
 			$this->applyData($this->object2array($data), $config);
 			if($config['delete_object_supported']){
-				$this->getQb()
+				$this->getEm()
+                    ->createQueryBuilder()
 					->delete($config['class'],'t')
 					->where('t.eiisId is null or t.eiisId=\'\'')
 					->getQuery()
@@ -202,7 +199,6 @@ class EiisIntegrationService
 			$this->client = new \Zend\Soap\Client($this->getConfig()['remote']['url']);
 		}
 		return $this->client;
-
 	}
 
 	private function getSessionId()
@@ -227,24 +223,22 @@ class EiisIntegrationService
 
 	private function applyData(array $data, array $config)
     {
-
 		$notCreatedCount = 0;
 		foreach ($data as $value){
-            $newObject = false;
+
 			$obj = $this->getEm()->getRepository($config['class'])->{$config['find_one_method']}($value);
 
 			if(!$obj){
 				if($config['create_object_supported']){
 					$obj = new $config['class']();
-                    $newObject = true;
 				}else{
 					$notCreatedCount++;
 					continue;
 				}
 			}
 			try {
-				$logs = $obj->{$config['setter']}($value);
-			}catch (SkipThisObjectException $exception){
+				$obj->{$config['setter']}($value);
+			}catch (SkipThisObjectException){
 				$notCreatedCount++;
 				if(!$obj || is_null($obj->getId())){
 				    $this->getEm()->detach($obj);
@@ -339,17 +333,11 @@ class EiisIntegrationService
 		return $this->doctrine->getConnection()->fetchColumn('select uuid()');
 	}
 
-	/**
-	 * @return LoggerInterface
-	 */
 	private function getLogger(): LoggerInterface
 	{
 		return $this->logger;
 	}
 
-	/**
-	 * @param LoggerInterface $logger
-	 */
 	public function setLogger(LoggerInterface $logger)
 	{
 		$this->logger = $logger;
