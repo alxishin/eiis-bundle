@@ -25,7 +25,7 @@ class UpdateLocalDataCommand extends Command
     }
 
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('eiis:action')
@@ -34,7 +34,7 @@ class UpdateLocalDataCommand extends Command
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if (!$this->lock()) {
             $io = new SymfonyStyle($input, $output);
