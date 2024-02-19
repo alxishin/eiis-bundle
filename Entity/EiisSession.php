@@ -4,35 +4,38 @@ namespace Corp\EiisBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
+
 /**
- * EiisSession
- *
- * @ORM\Table(name="EiisSession")
- * @ORM\Entity
+ * EiisPackage
  */
+#[ORM\Table(name: 'EiisSession')]
+#[ORM\Entity]
 class EiisSession
 {
+
+
     /**
-     * @var integer
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
+     * @var int
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     private $id;
+
+
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="uuid", type="string", length=36, unique=true)
      */
+    #[ORM\Column(name: 'uuid', type: 'string', length: 36, unique: true)]
     private $uuid;
+
+
 
     /**
      * @var \DateTime
-     *
-     * @ORM\Column(name="dateCreated", type="datetime")
      */
+    #[ORM\Column(name: 'dateCreated', type: 'datetime')]
     private $dateCreated;
 
     /**
