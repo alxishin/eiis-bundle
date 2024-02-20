@@ -4,54 +4,56 @@ namespace Corp\EiisBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
+
 /**
  * EiisLog
- *
- * @ORM\Table(name="eiis_log")
- * @ORM\Entity(repositoryClass="Corp\EiisBundle\Repository\EiisLogRepository")
  */
+#[ORM\Table(name: 'eiis_log')]
+#[ORM\Entity(repositoryClass: 'Corp\EiisBundle\Repository\EiisLogRepository')]
 class EiisLog
 {
+
     /**
      * @var int
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     private $id;
+
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="systemObjectCode", type="string", length=255)
      */
+    #[ORM\Column(name: 'systemObjectCode', type: 'string', length: 255)]
     private $systemObjectCode;
 
-	/**
-	 * @var array
-	 * @ORM\Column(name="loghistory", type="json")
-	 */
-	private $loghistory;
-
-	/**
-	 * @var string
-	 *
-	 * @ORM\Column(name="EiisId", type="string", length=36, nullable=true)
-	 */
-	private $eiisId;
-
-	/**
-	 * @var \DateTime
-	 *
-	 * @ORM\Column(name="dateCreated", type="datetime")
-	 */
-	private $dateCreated;
 
     /**
-     * @var mixed
-     * @ORM\Column(name="type", type="integer", nullable=true)
+     * @var array
      */
+    #[ORM\Column(name: 'loghistory', type: 'json')]
+	private $loghistory;
+
+
+
+    /**
+     * @var string
+     */
+    #[ORM\Column(name: 'EiisId', type: 'string', length: 36, nullable: true)]
+	private $eiisId;
+
+
+
+    /**
+     * @var \DateTime
+     */
+    #[ORM\Column(name: 'dateCreated', type: 'datetime')]
+	private $dateCreated;
+
+
+    /**@var int */
+    #[ORM\Column(name: 'type', type: 'integer', nullable: true)]
     private $type;
 
     const TYPE_NEW = 1;

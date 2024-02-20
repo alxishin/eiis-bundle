@@ -4,42 +4,43 @@ namespace Corp\EiisBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * EiisUpdateNotification
- *
- * @ORM\Table(name="EiisUpdateNotification", uniqueConstraints={@ORM\UniqueConstraint(name="uniq_index1", columns={"systemObjectCode", "signalFrom"})})
- * @ORM\Entity
- */
+
+#[ORM\Table(name: 'EiisUpdateNotification')]
+#[ORM\UniqueConstraint(name: 'uniq_index1', columns: ['systemObjectCode', 'signalFrom'])]
+#[ORM\Entity]
 class EiisUpdateNotification
 {
+
+
     /**
-     * @var integer
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
+     * @var int
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     private $id;
+
+
 
     /**
      * @var \DateTime
-     *
-     * @ORM\Column(name="dateCreated", type="datetime")
      */
+    #[ORM\Column(name: 'dateCreated', type: 'datetime')]
     private $dateCreated;
+
+
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="systemObjectCode", type="string", length=255)
      */
+    #[ORM\Column(name: 'systemObjectCode', type: 'string', length: 255)]
     private $systemObjectCode;
 
+
     /**
-     * @var integer
-     *
-     * @ORM\Column(name="signalFrom", type="integer")
+     * @var int
      */
+    #[ORM\Column(name: 'signalFrom', type: 'integer')]
     private $signalFrom;
 
     /**

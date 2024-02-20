@@ -4,42 +4,42 @@ namespace Corp\EiisBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
+
 /**
  * EiisPackage
- *
- * @ORM\Table(name="EiisPackage")
- * @ORM\Entity
  */
+#[ORM\Table(name: 'EiisPackage')]
+#[ORM\Entity]
 class EiisPackage
 {
+
     /**
-     * @var integer
-     *
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
+     * @var int
      */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     private $id;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="systemObjectCode", type="string", length=255)
-     */
-    private $systemObjectCode;
 
     /**
      * @var string
-     *
-     * @ORM\Column(name="uuid", type="string", length=36, unique=true)
      */
+    #[ORM\Column(name: 'systemObjectCode', type: 'string', length: 255)]
+    private $systemObjectCode;
+
+
+    /**
+     * @var string
+     */
+    #[ORM\Column(name: 'uuid', type: 'string', length: 36, unique: true)]
     private $uuid;
+
 
     /**
      * @var \DateTime
-     *
-     * @ORM\Column(name="dateCreated", type="datetime")
      */
+    #[ORM\Column(name: 'dateCreated', type: 'datetime')]
     private $dateCreated;
 
 

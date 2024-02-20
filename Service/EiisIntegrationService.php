@@ -17,6 +17,7 @@ use Corp\EiisBundle\Exceptions\SkipThisObjectException;
 use Corp\EiisBundle\Interfaces\IEiisLog;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
+use Laminas\Soap\Client;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -196,14 +197,19 @@ class EiisIntegrationService
 		return false;
 	}
 
-	private function getClient()
+    private function getClient()
     {
-		if(!$this->client){
-			$this->client = new \Zend\Soap\Client($this->getConfig()['remote']['url']);
-		}
-		return $this->client;
+        if(!$this->client){
+            $this->client = new \Laminas\Soap\Client($this->getConfig()['remote']['url'],
+                [
+                    'login'=>$this->getConfig()['remote']['username'],
+                    'password'=>$this->getConfig()['remote']['password']
+                ]);
 
-	}
+        }
+        return $this->client;
+
+    }
 
 	private function getSessionId()
     {
