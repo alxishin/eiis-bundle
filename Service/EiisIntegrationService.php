@@ -242,6 +242,15 @@ class EiisIntegrationService
 			if(!$obj){
 				if($config['create_object_supported']){
 					$obj = new $config['class']();
+					if (method_exists($obj, 'setServiceContainer'))
+                    {
+                        $obj->setServiceContainer($this->container);
+                    }
+
+                    if (method_exists($obj, 'setDoctrine'))
+                    {
+                        $obj->setDoctrine($this->doctrine);
+                    }
                     $newObject = true;
 				}else{
 					$notCreatedCount++;
