@@ -236,13 +236,23 @@ class EiisIntegrationService
 
 		$notCreatedCount = 0;
 		foreach ($data as $value){
-            $newObject = false;
+			$newObject = false;
 			$obj = $this->getEm()->getRepository($config['class'])->{$config['find_one_method']}($value);
 
 			if(!$obj){
 				if($config['create_object_supported']){
 					$obj = new $config['class']();
-                    $newObject = true;
+					if (method_exists($obj, 'setServiceContainer'))
+					{
+						$obj->setServiceContainer($this->container);
+					}
+
+					if (method_exists($obj, 'setDoctrine'))
+					{
+						$obj->setDoctrine($this->doctrine);
+					}
+
+					$newObject = true;
 				}else{
 					$notCreatedCount++;
 					continue;
