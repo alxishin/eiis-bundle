@@ -251,6 +251,7 @@ class EiisIntegrationService
                     {
                         $obj->setDoctrine($this->doctrine);
                     }
+                    
                     $newObject = true;
 				}else{
 					$notCreatedCount++;
