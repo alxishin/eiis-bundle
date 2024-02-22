@@ -9,7 +9,7 @@
         }
     ],
     "require": {
-        "php": "8.2.*",
+        "php": "^8.2",
         "symfony/console": "^6.0 || ^7.0",
         "symfony/http-kernel": "^6.0 || ^7.0",
         "symfony/config": "^6.0 || ^7.0",
@@ -17,7 +17,8 @@
         "symfony/event-dispatcher": "^6.0 || ^7.0",
         "symfony/validator": "^6.0 || ^7.0",
         "symfony/form": "^6.0 || ^7.0",
-        "sonata-project/admin-bundle": "^4.18"
+        "sonata-project/admin-bundle": "^4.18",
+        "laminas/laminas-soap": "^2.13"
     },
 	"minimum-stability": "stable",
     "autoload": {
