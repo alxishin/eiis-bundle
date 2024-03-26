@@ -3,6 +3,7 @@
 namespace Corp\EiisBundle\DependencyInjection;
 
 use Corp\EiisBundle\Service\EiisIntegrationService;
+use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader;
@@ -18,7 +19,7 @@ class CorpEiisExtension extends Extension
     /**
      * {@inheritdoc}
      */
-    public function load(array $configs, ContainerBuilder $container)
+    public function load(array $configs, ContainerBuilder $container): void
     {
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
@@ -31,7 +32,7 @@ class CorpEiisExtension extends Extension
 
     }
 
-    public function getConfiguration(array $config, ContainerBuilder $container)
+    public function getConfiguration(array $config, ContainerBuilder $container): ?ConfigurationInterface
     {
         return parent::getConfiguration($config, $container);
     }
