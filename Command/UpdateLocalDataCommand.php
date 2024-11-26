@@ -31,6 +31,7 @@ class UpdateLocalDataCommand extends Command
             ->setName('eiis:action')
             ->addArgument('type', InputArgument::REQUIRED)
 			->addOption('code', 'c' ,InputOption::VALUE_REQUIRED)
+			->addOption('cacheMode', null ,InputOption::VALUE_NONE)
         ;
     }
 
@@ -51,7 +52,7 @@ class UpdateLocalDataCommand extends Command
 				if(!$input->getOption('code')){
 					throw new \Exception('Option code is required');
 				}
-                $this->eiisIntegrationService->{$input->getArgument('type')}($input->getOption('code'));
+                $this->eiisIntegrationService->{$input->getArgument('type')}($input->getOption('code'), $input->hasOption('cacheMode'));
 				break;
             default:
                 throw new \Exception('Wrong type');

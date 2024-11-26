@@ -21,6 +21,7 @@ use Laminas\Soap\Client;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Validator\ConstraintViolationInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -38,7 +39,8 @@ class EiisIntegrationService
 
     public function __construct(private readonly ManagerRegistry $doctrine,
                                 private readonly EventDispatcherInterface $eventDispatcher,
-                                private readonly ValidatorInterface $validator)
+                                private readonly ValidatorInterface $validator,
+                                private readonly KernelInterface $kernel)
     {
     }
 
@@ -57,7 +59,7 @@ class EiisIntegrationService
 		return $this->config;
 	}
 
-	public function updateLocalDataByCode(string $code)
+	public function updateLocalDataByCode(string $code, bool $cacheMode = false)
     {
 		$this->date = new \DateTime();
 		$sessionId = $this->getSessionId();
@@ -66,7 +68,7 @@ class EiisIntegrationService
 		$part = 1;
 		while (true){
 			$this->getLogger()->info('Load '.$code.' package part #'.$part);
-			$result = $this->handlePackagePart($code, $sessionId, $packageId, $part);
+			$result = $this->handlePackagePart($code, $sessionId, $packageId, $part, $cacheMode);
 			if(!$result){
 				break;
 			}
@@ -94,49 +96,102 @@ class EiisIntegrationService
 
                 $filter = '<filter><column code="'.$filtData['field'].'" '.$filtData['action'].'="'.$value.'"></column></filter>';
             }
-        }catch (Exception $e){
+        }catch (\Exception $e){
             $this->getLogger()->warning('Generating Filter  is error('.$code.'):'.$e->getMessage());
         }
 
         return $filter;
     }
 
-	private function handlePackagePart($code, $sessionId, $packageId, $part)
+	private function handlePackagePart($code, $sessionId, $packageId, $part, bool $cacheMode = false)
     {
 		$i = 0;
 		while(true){
-			sleep(10);
+            $this->getLogger()->info(date('c').' try #'.$i);
+
 			$i++;
-			if($i > 10){
+			if($i > 100){
 				throw new \Exception('Не удалось получить пакет данных для объекта '.$code);
 			}
 
 			$package = false;
 			try{
-				$package = $this->getClient()->GetPackage(['sessionId'=>$sessionId,'packageId'=>$packageId,'part'=>$part]);
+
+
+                if ($cacheMode) {
+
+                    $cachekey = $code.'_'.$part;
+                    $filename = $this->kernel->getCacheDir().'/eiis/'.$cachekey.'.xml';
+                    if (!is_dir($this->kernel->getCacheDir().'/eiis/')) {
+                        mkdir($this->kernel->getCacheDir().'/eiis/');
+                    }
+                    $this->getLogger()->info($filename);
+                    if (!file_exists($filename)) {
+                        $this->getLogger()->info(__LINE__);
+                        $package = $this->getClient()->GetPackage(['sessionId'=>$sessionId,'packageId'=>$packageId,'part'=>$part]);
+                        if($package){
+                            switch ((string)$package->GetPackageResult){
+                                case '0542':
+                                    return false;
+                                case '053':
+                                    $this->getLogger()->info(date('c').' 053 code - next try #'.$i);
+                                    sleep(10);
+                                    continue 2;
+//                                default:
+//                                    break;
+                            }
+
+                            file_put_contents($filename, (string)$package->GetPackageResult);
+                            try{
+                                $this->getLogger()->debug((string)$code.' #'.$packageId);
+//                                $this->getLogger()->debug((string)$package->GetPackageResult);
+                                $data = simplexml_load_string((string)$package->GetPackageResult, \SimpleXMLElement::class, LIBXML_COMPACT);
+                            }catch (\Throwable $e){
+                                throw $e;
+                            }
+//                            break;
+                        }
+                    } else {
+                        $data = simplexml_load_string(file_get_contents($filename), \SimpleXMLElement::class, LIBXML_COMPACT);
+//                        break;
+                    }
+
+
+
+
+                } else {
+                    $package = $this->getClient()->GetPackage(['sessionId'=>$sessionId,'packageId'=>$packageId,'part'=>$part]);
+
+                    if($package){
+                        switch ((string)$package->GetPackageResult){
+                            case '0542':
+                                return false;
+                            case '053':
+                                $this->getLogger()->info(date('c').' 053 code - next try #'.$i);
+                                sleep(10);
+                                continue 2;
+//                            default:
+//                                break 2;
+                        }
+                    }
+                    try{
+                        $this->getLogger()->debug((string)$code.' #'.$packageId);
+//                        $this->getLogger()->debug((string)$package->GetPackageResult);
+                        $data = simplexml_load_string((string)$package->GetPackageResult, \SimpleXMLElement::class, LIBXML_COMPACT);
+                    }catch (\Throwable $e){
+                        throw $e;
+                    }
+
+                }
+
 			}catch (\Throwable $exception){
 				$this->getLogger()->info('Error "'.$exception->getMessage().'" next try #'.$i);
 			}
 
-			if($package){
-				switch ((string)$package->GetPackageResult){
-					case '0542':
-						return false;
-					case '053':
-						$this->getLogger()->info(date('c').' 053 code - next try #'.$i);
-						continue 2;
-					default:
-						break 2;
-				}
-			}
+            break;
 		}
-		try{
-            $this->getLogger()->debug((string)$code.' #'.$packageId);
-            $this->getLogger()->debug((string)$package->GetPackageResult);
-			$data = simplexml_load_string((string)$package->GetPackageResult, \SimpleXMLElement::class, LIBXML_COMPACT);
-		}catch (\Throwable $e){
-			throw $e;
-		}
+
+//        return true;
 
 		try{
 			$config = $this->getConfigByRemoteCode($code);
@@ -200,7 +255,7 @@ class EiisIntegrationService
     private function getClient()
     {
         if(!$this->client){
-            $this->client = new \Laminas\Soap\Client($this->getConfig()['remote']['url'],
+            $this->client = new \SoapClient($this->getConfig()['remote']['url'],
                 [
                     'login'=>$this->getConfig()['remote']['username'],
                     'password'=>$this->getConfig()['remote']['password']
