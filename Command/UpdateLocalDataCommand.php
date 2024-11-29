@@ -2,9 +2,7 @@
 
 namespace Corp\EiisBundle\Command;
 
-use Corp\EiisBundle\Controller\EiisServiceController;
 use Corp\EiisBundle\Service\EiisIntegrationService;
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -18,9 +16,8 @@ class UpdateLocalDataCommand extends Command
 {
     use LockableTrait;
 
-    public function __construct(EiisIntegrationService $eiisIntegrationService, string $name = null)
+    public function __construct(private readonly EiisIntegrationService $eiisIntegrationService, ?string $name = null)
     {
-        $this->eiisIntegrationService = $eiisIntegrationService;
         parent::__construct($name);
     }
 
@@ -30,8 +27,8 @@ class UpdateLocalDataCommand extends Command
         $this
             ->setName('eiis:action')
             ->addArgument('type', InputArgument::REQUIRED)
-			->addOption('code', 'c' ,InputOption::VALUE_REQUIRED)
-			->addOption('cacheMode', null ,InputOption::VALUE_NONE)
+            ->addOption('code', 'c' ,InputOption::VALUE_REQUIRED)
+            ->addOption('cacheMode', null ,InputOption::VALUE_NONE)
         ;
     }
 
@@ -47,13 +44,13 @@ class UpdateLocalDataCommand extends Command
             case 'eiisUpdateLocalData':
             case 'eiisUpdateExternalData':
                 $this->eiisIntegrationService->{$input->getArgument('type')}();
-				break;
+                break;
             case 'updateLocalDataByCode':
-				if(!$input->getOption('code')){
-					throw new \Exception('Option code is required');
-				}
-                $this->eiisIntegrationService->{$input->getArgument('type')}($input->getOption('code'), $input->hasOption('cacheMode'));
-				break;
+                if(!$input->getOption('code')){
+                    throw new \Exception('Option code is required');
+                }
+                $this->eiisIntegrationService->{$input->getArgument('type')}($input->getOption('code'), $input->getOption('cacheMode'));
+                break;
             default:
                 throw new \Exception('Wrong type');
         }
