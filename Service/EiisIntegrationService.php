@@ -17,8 +17,6 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class EiisIntegrationService
 {
-    private \SoapClient$client;
-
     private array $config;
 
     private LoggerInterface $logger;
@@ -123,8 +121,6 @@ class EiisIntegrationService
                                     $this->getLogger()->info(date('c').' 053 code - next try #'.$i);
                                     sleep(10);
                                     continue 2;
-//                                default:
-//                                    break;
                             }
 
                             file_put_contents($filename, (string)$package->GetPackageResult);
@@ -135,15 +131,10 @@ class EiisIntegrationService
                             }catch (\Throwable $e){
                                 throw $e;
                             }
-//                            break;
                         }
                     } else {
                         $data = simplexml_load_string(file_get_contents($filename), \SimpleXMLElement::class, LIBXML_COMPACT);
-//                        break;
                     }
-
-
-
 
                 } else {
                     $package = $this->getClient()->GetPackage(['sessionId'=>$sessionId,'packageId'=>$packageId,'part'=>$part]);
@@ -156,13 +147,10 @@ class EiisIntegrationService
                                 $this->getLogger()->info(date('c').' 053 code - next try #'.$i);
                                 sleep(10);
                                 continue 2;
-//                            default:
-//                                break 2;
                         }
                     }
                     try{
                         $this->getLogger()->debug($code .' #'.$packageId);
-//                        $this->getLogger()->debug((string)$package->GetPackageResult);
                         $data = simplexml_load_string((string)$package->GetPackageResult, \SimpleXMLElement::class, LIBXML_COMPACT);
                     }catch (\Throwable $e){
                         throw $e;
@@ -176,8 +164,6 @@ class EiisIntegrationService
 
             break;
         }
-
-//        return true;
 
         try{
             $config = $this->getConfigByRemoteCode($code);
@@ -213,15 +199,15 @@ class EiisIntegrationService
     public function eiisUpdateExternalData(): void
     {
         $updateNotifications = $this->getEm()->getRepository(EiisUpdateNotification::class)->findBy(['signalFrom'=>UpdateNotificationEvent::SIGNAL_FROM_INTERNAL]);
-        foreach ($updateNotifications as $notification){
+        foreach ($updateNotifications as $notification) {
             $this->sendUpdateNotification($this->getSessionId(), $notification->getSystemObjectCode());
         }
     }
 
     public function getConfigByRemoteCode(string $remoteObjectCode)
     {
-        foreach ($this->getConfig()['objects'] as $val){
-            if($remoteObjectCode===$val['remote_code']){
+        foreach ($this->getConfig()['objects'] as $val) {
+            if ($remoteObjectCode===$val['remote_code']) {
                 return $val;
             }
         }
@@ -230,8 +216,8 @@ class EiisIntegrationService
 
     public function getConfigByLocalCode(string $localObjectCode)
     {
-        foreach ($this->getConfig()['objects'] as $val){
-            if($localObjectCode===$val['local_code']){
+        foreach ($this->getConfig()['objects'] as $val) {
+            if ($localObjectCode===$val['local_code']) {
                 return $val;
             }
         }
@@ -240,16 +226,11 @@ class EiisIntegrationService
 
     private function getClient(): \SoapClient
     {
-        if(!$this->client){
-            $this->client = new \SoapClient($this->getConfig()['remote']['url'],
-                [
-                    'login'=>$this->getConfig()['remote']['username'],
-                    'password'=>$this->getConfig()['remote']['password']
-                ]);
-
-        }
-        return $this->client;
-
+        return new \SoapClient($this->getConfig()['remote']['url'],
+            [
+                'login'=>$this->getConfig()['remote']['username'],
+                'password'=>$this->getConfig()['remote']['password']
+            ]);
     }
 
     private function getSessionId(): string
@@ -274,7 +255,6 @@ class EiisIntegrationService
 
     private function applyData(array $data, array $config): void
     {
-
         $notCreatedCount = 0;
         foreach ($data as $value){
 
@@ -385,17 +365,12 @@ class EiisIntegrationService
         throw new \Exception($message);
     }
 
-    public function guidv4()
-    {
-        return $this->doctrine->getConnection()->fetchColumn('select uuid()');
-    }
-
     private function getLogger(): LoggerInterface
     {
         return $this->logger;
     }
 
-    public function setLogger(LoggerInterface $logger)
+    public function setLogger(LoggerInterface $logger): void
     {
         $this->logger = $logger;
     }
