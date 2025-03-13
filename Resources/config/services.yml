@@ -13,11 +13,11 @@ services:
         tags:
             - { name: kernel.event_listener, event: eiis.notification.update }
 
-    corp_eiis.admin.eiis_log:
-        class: Corp\EiisBundle\Admin\EiisLogAdmin
-        tags:
-            - { name: sonata.admin, manager_type: orm, group: admin, label: EiisLog, model_class: Corp\EiisBundle\Entity\EiisLog }
-        public: true
+#    corp_eiis.admin.eiis_log:
+#        class: Corp\EiisBundle\Admin\EiisLogAdmin
+#        tags:
+#            - { name: sonata.admin, manager_type: orm, group: admin, label: EiisLog, model_class: Corp\EiisBundle\Entity\EiisLog }
+#        public: true
 
     Corp\EiisBundle\Command\UpdateLocalDataCommand:
         tags:

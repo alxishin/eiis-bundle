@@ -6,7 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 
 /**
- * EiisLog
+ * @deprecated
  */
 #[ORM\Table(name: 'eiis_log')]
 #[ORM\Entity(repositoryClass: 'Corp\EiisBundle\Repository\EiisLogRepository')]

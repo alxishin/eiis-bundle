@@ -11,6 +11,9 @@ use Sonata\AdminBundle\Show\ShowMapper;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 
+/**
+ * @deprecated 
+ */
 class EiisLogAdmin extends AbstractAdmin
 {
     protected $datagridValues = array(
